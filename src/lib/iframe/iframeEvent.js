@@ -1,38 +1,14 @@
 /* eslint-disable no-use-before-define */
-// 判断页面点击的元素是否被包含与可点击元素
-import judgeIfContainsOrEqual from './judgeIfContainsOrEqual';
-// 弹框 以及 被点击元素的样式添加
-import showDialog from './styleOperation/showDialog';
 
-/* eslint-disable default-case */
-export default function (nodeData) {
-    // 可点击元素的节点和唯一标识
-    const NODE_DATA = Object.assign({}, nodeData);
+// 判断页面点击的元素是否有效的被包含与可点击元素
+import judgeIfContainsOrEqual from '../nodeOperation/judgeIfContainsOrEqual';
 
-    // 存放在服务器中的 可视化埋点界面
-    const serverUrl = 'http://localhost:8080';
+// 埋点弹框 以及 被点击元素的样式添加
+import showDialog from '../buryingPointDialog/showDialog';
 
-    // 监听
-    window.addEventListener('message', receiveMessage, false);
+// 查看事件的弹框
+import viewEventPopOver from '../viewEventPopOver/popOver';
 
-    function receiveMessage(event) {
-        // 安全问题  只接受来自可视化埋点服务器的通信
-        if (event.origin !== serverUrl) {
-            return;
-        }
-        switch (event.data.name) {
-        case 'isAutoHide':
-            iframeAutoHide(event.data);
-            break;
-        case 'isCreatingEvent':
-            switcingCreateEventMode(event.data, NODE_DATA);
-            break;
-        }
-    }
-
-    // 假设你已经验证了所受到信息的origin (任何时候你都应该这样做), 一个很方便的方式就是把enent.source
-    // 作为回信的对象，并且把event.origin作为targetOrigin
-}
 // iframe自动隐藏
 function iframeAutoHide(postData) {
     const iframe = document.getElementById('iframe');
@@ -44,12 +20,14 @@ function iframeAutoHide(postData) {
             iframe.style.top = '0';
         };
     } else {
-        iframe.onmouseleave = () => { };
-        iframe.onmouseenter = () => { };
+        iframe.onmouseleave = null;
+        iframe.onmouseenter = null;
         iframe.style.top = '0';
     }
     console.log(postData.isAutoHide);
 }
+
+
 // 创建事件模式
 function switcingCreateEventMode(postData, _NODE_DATA) {
     console.log(postData.isCreatingEvent);
@@ -61,12 +39,14 @@ function switcingCreateEventMode(postData, _NODE_DATA) {
         // closeBodyOnclick();
     }
 }
+
 // 保存原先的点击事件
 const buttonHistoryClickEvent = [];
 const otherHistoryClickEvent = [];
 
 const body = document.getElementsByTagName('body')[0];
-// 元素默认行为
+
+// 禁止元素默认行为
 function preventDefault(event) {
     event.preventDefault();
 }
@@ -76,14 +56,14 @@ function openMode(_NODE_DATA) {
     body.addEventListener('click', preventDefault);
     openBodyOnclick(_NODE_DATA);
     // 先将事件保存  然后赋值null   button
-    _NODE_DATA.BUTTON.tag_button.forEach((item, key) => {
-        buttonHistoryClickEvent[key] = item.onclick;
-        item.onclick = null;
+    _NODE_DATA.BUTTON.tag_button.forEach((val, key) => {
+        buttonHistoryClickEvent[key] = val.onclick;
+        val.onclick = null;
     });
     // other
-    _NODE_DATA.OTHER.tag_other.forEach((item, key) => {
-        otherHistoryClickEvent[key] = item.onclick;
-        item.onclick = null;
+    _NODE_DATA.OTHER.tag_other.forEach((val, key) => {
+        otherHistoryClickEvent[key] = val.onclick;
+        val.onclick = null;
     });
 }
 
@@ -92,12 +72,12 @@ function closeMode(_NODE_DATA) {
     body.removeEventListener('click', preventDefault);
     closeBodyOnclick();
     // 将click事件还给button
-    _NODE_DATA.BUTTON.tag_button.forEach((item, key) => {
-        item.onclick = buttonHistoryClickEvent[key];
+    _NODE_DATA.BUTTON.tag_button.forEach((val, key) => {
+        val.onclick = buttonHistoryClickEvent[key];
     });
     // other
-    _NODE_DATA.OTHER.tag_other.forEach((item, key) => {
-        item.onclick = otherHistoryClickEvent[key];
+    _NODE_DATA.OTHER.tag_other.forEach((val, key) => {
+        val.onclick = otherHistoryClickEvent[key];
     });
 }
 
@@ -110,7 +90,7 @@ function openBodyOnclick(_NODE_DATA) {
         const isContains = judgeIfContainsOrEqual(_NODE_DATA, event);
         // 包含 ? 弹窗 ：不弹
         if (isContains.result === 'yes') {
-            // 弹框
+            // 埋点弹框
             const { node, nodeId } = isContains;
             showDialog(node, nodeId);
         }
@@ -121,3 +101,16 @@ function openBodyOnclick(_NODE_DATA) {
 function closeBodyOnclick() {
     body.onclick = null;
 }
+
+// 切换查看事件
+function switcingViewEvent(postData) {
+    console.log(postData.isViewEvent);
+    if (postData.isViewEvent) {
+        viewEventPopOver(true);
+    } else {
+        viewEventPopOver(false);
+    }
+}
+
+
+export { iframeAutoHide, switcingCreateEventMode, switcingViewEvent };

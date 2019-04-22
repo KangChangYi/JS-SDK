@@ -1,17 +1,21 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-use-before-define */
-import { addStyleForNode, removeStyleForNode, rememberBuryedNode } from './styleForNode';
+import { addStyle, removeStyle, rememberStyle } from './styleForBuryingPoint';
 // 引入全局变量模块
-import global from '../globalData/global';
+import global from '../globalData/globalData';
 // css
 import '../../css/burying.less';
 import '../../css/main.less';
+// 封装的ajax请求
+import ajax from '../../utils/request';
+// 引入mock
+require('../../mock/index');
 
 // const global.buriedNodeList = [];
 const body = document.getElementsByTagName('body')[0];
 //  判断是否已经存在  存在：不添加样式  放入text  不存在  添加样式
 export default function (node, nodeId) {
-    console.log(node, nodeId);
+    // console.log(node, nodeId);
     const clickedElementNode = node;
     const clickedElementNodeId = nodeId;
 
@@ -31,7 +35,7 @@ export default function (node, nodeId) {
     }
     if (!status.has) {
         // 为节点添加样式
-        addStyleForNode(clickedElementNode);
+        addStyle(clickedElementNode);
     }
 
     // 获取视口宽高
@@ -40,6 +44,7 @@ export default function (node, nodeId) {
 
     // 获取点击元素相对位置 x y  top left width height
     const clientRect = clickedElementNode.getBoundingClientRect();
+    // console.log(clientRect);
 
     // 创建弹出框最外层div
     const eventPop = document.createElement('div');
@@ -57,7 +62,7 @@ export default function (node, nodeId) {
         event.stopPropagation();
         if (!status.has) {
             // 移除点击节点的样式
-            removeStyleForNode(clickedElementNode);
+            removeStyle(clickedElementNode);
         }
         // 移除弹出框和遮罩层
         body.removeChild(eventPop);
@@ -80,7 +85,6 @@ export default function (node, nodeId) {
     // 在页面中添加 弹窗和遮罩层
     body.appendChild(eventPop);
     body.appendChild(cover);
-    console.log(clientRect);
 }
 
 // 为弹出框增加元素 构成完整弹出框
@@ -135,15 +139,45 @@ function addEventPopSonNode(rootNode, cover, clickedElementNodeId, clickedElemen
         } else if (status.has) {
             // 修改了事件名称   （这里写修改事件名称接口）
             global.buriedNodeList[status.index].event = input.value;
+            // 修改事件接口
+            ajax({
+                url: 'http://localhost:8001/event/update',
+                methods: 'POST',
+                async: true,
+                data: {
+                    projectName: global.projectName,
+                    projectId: global.projectId,
+                    // global.buriedNodeList[status.index]
+                    event: 'eventInfo',
+                },
+                success(res) {
+                    console.log(res);
+                },
+            });
             // 为已埋点节点设置自定义data属性     待考虑
             // clickedElementNode.dataset.trackBurying = input.value;
         } else {
             // ↓埋点不存在，（这里写添加埋点事件接口），并且将埋点事件信息添加至全局变量模块
             global.buriedNodeList.push({ eventId: clickedElementNodeId, event: input.value });
+            // 添加事件接口
+            ajax({
+                url: 'http://localhost:8001/event/add',
+                methods: 'POST',
+                async: true,
+                data: {
+                    projectName: global.projectName,
+                    projectId: global.projectId,
+                    // global.buriedNodeList[status.index]
+                    event: 'eventInfo',
+                },
+                success(res) {
+                    console.log(res);
+                },
+            });
             // 待考虑
             // clickedElementNode.dataset.trackBurying = input.value;
             // 保持已埋点元素的样式
-            rememberBuryedNode(clickedElementNode);
+            rememberStyle(clickedElementNode);
         }
         // 发送相应关联数据给后台形成配置表
         console.log(global.buriedNodeList);

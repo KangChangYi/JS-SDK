@@ -1,7 +1,7 @@
 /* eslint-disable func-names */
 /* eslint-disable consistent-return */
 // css
-import '../css/iframe.less';
+import '../../css/iframe.less';
 
 export default function () {
     const iframe = document.createElement('iframe');

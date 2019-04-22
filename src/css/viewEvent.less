@@ -1,0 +1,71 @@
+@import './main.less';
+
+.viewEventDiv-layout {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif !important;
+    font-size: @font-size-base;
+    width: 340px !important;
+    height: 330px !important;
+    position: fixed !important;
+    top: 58px !important;
+    right: 217px !important;
+    z-index: 1000001 !important;
+    background: white !important;
+    border: 1px @border-color-one solid !important;
+    box-shadow: @box-shadow-base  !important;
+}
+
+.search-box {
+    padding: 10px !important;
+    border-bottom: 1px @border-color-one solid;
+}
+
+.search {
+    height: 40px;
+    padding-left: 7px;
+}
+
+.eventList {
+    height: 249px;
+    overflow: auto;
+    color: @text-color-base;
+    padding: 10px 0 !important;
+}
+
+.list-item {
+    height: 36px;
+    overflow: auto;
+    padding: 5px 15px;
+    cursor: pointer;
+    box-sizing: border-box;
+    .displayCenter(@justify-content: space-between);
+
+    &:hover {
+        background: @base-color + #efefef;
+    }
+
+    &:hover span {
+        color: @text-color-primary;
+    }
+
+    &:hover button {
+        display: block !important;
+    }
+}
+
+.item-button {
+    width: fit-content;
+    height: fit-content;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #F56C6C;
+    color: white;
+    display: none;
+
+    &:hover {
+        background: #f05053;
+    }
+}
+
+.search {
+    position: relative;
+}
